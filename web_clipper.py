@@ -5,7 +5,7 @@ from watchdog.events import FileSystemEventHandler
 import requests
 from github import Github
 import openai
-from notion_client import Client
+# from notion_client import Client
 import telegram
 import logging
 from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Header, Request, Body
@@ -113,7 +113,7 @@ class WebClipperHandler:
     def __init__(self, config):
         self.config = config
         self.github_client = Github(config['github_token'])
-        self.notion_client = Client(auth=config['notion_token'])
+        # self.notion_client = Client(auth=config['notion_token'])
         self.telegram_bot = telegram.Bot(token=config['telegram_token'])
         
         # 配置 OpenAI
@@ -149,7 +149,7 @@ class WebClipperHandler:
             logger.info(f"🏷️ 标签: {', '.join(tags)}")
             
             # 4. 保存到 Notion
-            notion_url = self.save_to_notion({
+            """notion_url = self.save_to_notion({
                 'title': title,
                 'original_url': original_url,
                 'snapshot_url': github_url,
@@ -158,6 +158,7 @@ class WebClipperHandler:
                 'created_at': time.time()
             })
             logger.info(f"📓 Notion 保存成功")
+            """
             
             # 5. 发送 Telegram 通知
             notification = (
@@ -173,13 +174,13 @@ class WebClipperHandler:
             logger.info("✨ 网页剪藏处理完成!")
             logger.info(f"📍 原始链接: {original_url}")
             logger.info(f"🔗 GitHub预览: {github_url}")
-            logger.info(f"📚 Notion笔记: {notion_url}")
+            # logger.info(f"📚 Notion笔记: {notion_url}")
             logger.info("=" * 50)
             
             return {
                 "status": "success",
                 "github_url": github_url,
-                "notion_url": notion_url
+                # "notion_url": notion_url
             }
             
         except Exception as e:
@@ -397,7 +398,7 @@ async def startup_event():
         CONFIG['api_key'] = secrets.token_urlsafe(32)
         logger.info(f"Generated new API key: {CONFIG['api_key']}")
 
-@app.post("/upload/")
+@app.post("/upload")
 @limiter.limit("10/minute", key_func=get_remote_address)
 async def upload_file(
     request: Request,
